@@ -43,17 +43,14 @@ export class CourseComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    const searchLessons$ = fromEvent<any>(this.input.nativeElement, 'keyup')
+    this.lessons$ = fromEvent<any>(this.input.nativeElement, 'keyup')
       .pipe(
         map(event => event.target.value),
+        startWith(''),
         debounceTime(500),
         distinctUntilChanged(),
         switchMap(input => this.getLessons(input))
       );
-
-    const initialLessons$ = this.getLessons();
-
-    this.lessons$ = concat(initialLessons$, searchLessons$);
 
   }
 
