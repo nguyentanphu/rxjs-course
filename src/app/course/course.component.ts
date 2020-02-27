@@ -16,6 +16,7 @@ import {
 import { merge, fromEvent, Observable, concat } from 'rxjs';
 import { Lesson } from '../model/lesson';
 import { createHttpObservable } from '../common/util';
+import { CoursesStore } from '../common/courses.store';
 
 
 @Component({
@@ -31,15 +32,15 @@ export class CourseComponent implements OnInit, AfterViewInit {
 
   @ViewChild('searchInput', { static: true }) input: ElementRef;
 
-  constructor(private route: ActivatedRoute) {
+  constructor(private route: ActivatedRoute, private coursesStore: CoursesStore) {
 
 
   }
 
   ngOnInit() {
 
-    this.courseId = this.route.snapshot.params['id'];
-    this.course$ = createHttpObservable(`/api/courses/${this.courseId}`);
+    this.courseId = +this.route.snapshot.params['id'];
+    this.course$ = this.coursesStore.selectCourseById(this.courseId);
   }
 
   ngAfterViewInit() {

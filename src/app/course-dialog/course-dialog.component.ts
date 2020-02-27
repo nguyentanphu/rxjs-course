@@ -6,6 +6,7 @@ import * as moment from 'moment';
 import { fromEvent } from 'rxjs';
 import { concatMap, distinctUntilChanged, exhaustMap, filter, mergeMap } from 'rxjs/operators';
 import { fromPromise } from 'rxjs/internal-compatibility';
+import { CoursesStore } from '../common/courses.store';
 
 @Component({
   selector: 'course-dialog',
@@ -24,7 +25,8 @@ export class CourseDialogComponent implements OnInit, AfterViewInit {
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<CourseDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) course: Course) {
+    @Inject(MAT_DIALOG_DATA) course: Course,
+    private coursesStore: CoursesStore) {
 
     this.course = course;
 
@@ -38,26 +40,12 @@ export class CourseDialogComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    this.form.valueChanges
-      .pipe(
-        filter(() => this.form.valid),
-        mergeMap(changes => this.saveCourse(changes))
-      )
-      .subscribe((changes) => {
-        console.log(changes);
-      });
-
 
   }
 
 
 
   ngAfterViewInit() {
-    fromEvent(this.saveButton.nativeElement, 'click')
-      .pipe(
-        exhaustMap(() => this.saveCourse(this.form.value))
-      )
-      .subscribe();
 
   }
 
@@ -66,15 +54,11 @@ export class CourseDialogComponent implements OnInit, AfterViewInit {
   close() {
     this.dialogRef.close();
   }
-  saveCourse(changes) {
-    return fromPromise(
-      fetch(`/api/courses/${this.course.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(changes),
-        headers: {
-          'content-type': 'application/json'
-        }
-      })
-    )
+  save() {
+    this.coursesStore.saveCourse(this.course.id, this.form.value)
+      .subscribe(
+        () => this.close(),
+        err => console.log(err)
+      );
   }
 }
